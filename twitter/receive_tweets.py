@@ -1,6 +1,7 @@
 import tweepy
 import socket
 # from config import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_SECRET, ACCESS_TOKEN, BEARER
+from datetime import datetime
 
 BEARER = 'AAAAAAAAAAAAAAAAAAAAAOtkigEAAAAAliy%2B7td2nmGkVVCj7orrLwhjJ8w%3DpM4IvekgfVzgAs7NnJoXgLrW1q67jpc2VRjeSmqJCCj8cLpfoc'
 
@@ -14,11 +15,18 @@ class TwitterV2Stream(tweepy.StreamingClient):
 
     def on_tweet(self, tweet):
         try:
-            if isinstance(tweet.text, str):
-                print(tweet.text)
+            if isinstance(tweet.text, str) and tweet.referenced_tweets == None:
+                #tweet.created_at.strftime("%m/%d/%Y, %H:%M:%S")
+                output = str(tweet.text)
+                if tweet.created_at is not None:
+                    output = output + str(";") + str(tweet.created_at) + "\n"
+                else:
+                    ts = datetime.timestamp(datetime.now())
+                    output = output + str(";") + str(ts) + "\n"
+                print(output)
                 print("-")
                 print("-")
-                self.client_socket.send(tweet.text.encode('utf-8'))
+                self.client_socket.send(output.encode('utf-8'))
                 return True
         except BaseException as e:
             print("Error on_data: %s" % str(e))
@@ -29,10 +37,11 @@ class TwitterV2Stream(tweepy.StreamingClient):
 
 def send_tweets_v2(c_socket):
     twitter_client = TwitterV2Stream(csocket=c_socket, b_token=BEARER)
-    twitter_client.add_rules([tweepy.StreamRule('"#afd" -lang:de'), tweepy.StreamRule('"#noafd" -lang:de')])
-    # twitter_client.delete_rules(['1590724722706333702','1590769829128146952','1590769829128146953'])
+    # "#noafd" -lang:de didnt work aka didnt filter for language
+    twitter_client.add_rules([tweepy.StreamRule('#afd -lang:de'), tweepy.StreamRule('#noafd -lang:de'), tweepy.StreamRule('afd -lang:de')])
+    #twitter_client.delete_rules(['1592908834301001731'])
     print(twitter_client.get_rules())
-    twitter_client.filter()
+    twitter_client.filter(tweet_fields=['referenced_tweets'])
 
 
 if __name__ == "__main__":
