@@ -1,5 +1,3 @@
-import threading
-
 from bs4 import BeautifulSoup
 import requests
 import threading
@@ -19,6 +17,18 @@ def receive_titles_from_date(actual_date):
     return data
 
 
+def filter_titles(titles):
+    result = []
+    for element in titles:
+        if any(x in element for x in filter_criteria()):
+            result.append(element)
+    return result
+
+
+def filter_criteria():
+    return ["Flüchtling", "Ukraine", "Weidel", "Wagenknecht"]
+
+
 class NewspaperTitleScraper(threading.Thread):
     def __init__(self, thread_name):
         super().__init__()
@@ -29,6 +39,7 @@ class NewspaperTitleScraper(threading.Thread):
         actual_date = date.today()
         actual_date = actual_date.strftime("%Y/%m/%d")
         data = receive_titles_from_date(actual_date)
+        data = filter_titles(data)
         for element in data:
             print(element)
 
