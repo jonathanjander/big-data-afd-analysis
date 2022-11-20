@@ -38,8 +38,8 @@ class TwitterV2Stream(tweepy.StreamingClient):
 def send_tweets_v2(c_socket):
     twitter_client = TwitterV2Stream(csocket=c_socket, b_token=BEARER)
     # "#noafd" -lang:de didnt work aka didnt filter for language
-    twitter_client.add_rules([tweepy.StreamRule('#afd -lang:de'), tweepy.StreamRule('#noafd -lang:de'), tweepy.StreamRule('afd -lang:de')])
-    #twitter_client.delete_rules(['1592908834301001731'])
+    twitter_client.add_rules([tweepy.StreamRule('#afd lang:de'), tweepy.StreamRule('#noafd lang:de'), tweepy.StreamRule('afd lang:de')])
+    #twitter_client.delete_rules(['1592908834301001729','1592908834301001730','1592915146938224646','1592919964968681472','1592919964968681473','1592919964968681474'])
     print(twitter_client.get_rules())
     twitter_client.filter(tweet_fields=['referenced_tweets'])
 

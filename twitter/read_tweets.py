@@ -64,17 +64,26 @@ if __name__ == "__main__":
     os.environ['PYSPARK_PYTHON'] = sys.executable
     os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
     # create Spark session
-    spark = SparkSession.builder.appName("AfDTweetAnalysis").getOrCreate()
+    spark = SparkSession.builder.appName("AfDTweetAnalysis") \
+        .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector:10.0.5') \
+        .getOrCreate()
+
+        #.config("spark.mongodb.input.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
+        #.config("spark.mongodb.output.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
 
     # read the tweet data from socket
-    lines = spark.readStream.format("socket").option("host", "127.0.0.1").option("port", 5555).load()
+    lines = spark.readStream.format("socket") \
+        .option("host", "127.0.0.1") \
+        .option("port", 5555)\
+        .load()
+
     tweets = preprocessing(lines)
     tweets = sentiment(tweets)
     #tweets.printSchema()
     #create_table(tweets, spark)
     tweets = tweets.repartition(1)
     # encoding still doesn't work
-    query = tweets.writeStream.queryName("all_tweets") \
+    """query = tweets.writeStream.queryName("all_tweets") \
         .format("json") \
         .option("path", "../data-warehouse/json_files") \
         .option("checkpointLocation", "../data-warehouse/check") \
@@ -82,6 +91,17 @@ if __name__ == "__main__":
         .trigger(processingTime='60 seconds') \
         .start()
         # .outputMode('append')
+    """
+    query = tweets.writeStream.queryName("all_tweets") \
+        .format("mongodb") \
+        .option("spark.mongodb.connection.uri", "mongodb://localhost:27017/afd_tweet_analyzer") \
+        .option("spark.mongodb.database", "afd_tweet_analyzer") \
+        .option("spark.mongodb.collection", "tweets") \
+        .option("checkpointLocation", "../data-warehouse/check") \
+        .outputMode("append") \
+        .trigger(processingTime='60 seconds') \
+        .start()
+
 
     """
     # just for testing over the console
