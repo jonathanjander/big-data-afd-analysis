@@ -23,17 +23,20 @@ def main():
     titles = db["titles"]
     twelve_hours_in_seconds = 43200
     while True:
-        pre_path = "https://www.bild.de/archive/"
-        ending_path = "/index.html"
+        pre_path = "https://www.welt.de/schlagzeilen/nachrichten-vom-"
+        ending_path = ".html"
         actual_date = date.today()
-        actual_date = actual_date.strftime("%Y/%m/%d")
+        actual_date = actual_date.strftime("%d-%m-%Y")
+        actual_date = '19-11-2022'
         url = pre_path + actual_date + ending_path
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        table = soup.find("div", attrs={"class": "txt"})
+        text = soup.getText()[soup.getText().find('Alle Texte von'):]
+        text = text.split("|")
         data = []
-        for element in table.contents[3]:
-            data.append(element.text[12:])
+        for element in text:
+            print(element[element.find("Ressort:") + 8:-11])
+            data.append(element[element.find("Ressort:") + 8:-11])
         data = filter_titles(data)
         actual_date = date.today()
         actual_date = actual_date.strftime("%d.%m.%Y")
@@ -49,7 +52,6 @@ def main():
 
         if len(newspaper_titles) != 0:
             titles.insert_many(newspaper_titles)
-
         time.sleep(twelve_hours_in_seconds)
 
 
