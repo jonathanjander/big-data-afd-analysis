@@ -1,20 +1,13 @@
+# Get the latest base image for python
 FROM python:3.7
 
-RUN pip3 install requests tweepy
-
-ADD receive_tweets.py .
-
+RUN pip3 install germansentiment
+RUN pip3 install tweepy
+# Put files at the image '/socket-host/' folder.
+ADD receive_tweets.py /socket-host/
+# '/socket-host/' is base directory
+WORKDIR /socket-host/
+# Expose port 5555 in the container
 EXPOSE 5555
-
-CMD ["python3","-u","./receive_tweets.py"]
-
-#WORKDIR /socket
-
-#COPY requirements.txt requirements.txt
-
-#RUN pip3 install -r requirements.txt
-
-#COPY . .
-
-#CMD ["python3"]
-
+# execute the command
+CMD [ "python3", "receive_tweets.py" ]
