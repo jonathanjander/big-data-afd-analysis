@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import pymongo
-from datetime import date
+from datetime import date, datetime
 
 
 def filter_titles(titles):
@@ -21,7 +21,6 @@ def main():
     client = pymongo.MongoClient("mongodb://localhost:27023/")
     db = client["newspaperdb"]
     titles = db["titles"]
-    twelve_hours_in_seconds = 43200
     while True:
         pre_path = "https://www.bild.de/archive/"
         ending_path = "/index.html"
@@ -50,7 +49,16 @@ def main():
         if len(newspaper_titles) != 0:
             titles.insert_many(newspaper_titles)
 
-        time.sleep(twelve_hours_in_seconds)
+        time.sleep(calculate_sleep_time())
+
+
+def calculate_sleep_time():
+    five_minutes = 300
+    twelve_hours = 43200
+    if datetime.today().hour == 23 and datetime.today().minute > 50:
+        return twelve_hours
+    else:
+        return five_minutes
 
 
 if __name__ == '__main__':

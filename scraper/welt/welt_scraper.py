@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import pymongo
-from datetime import date
+from datetime import date, datetime
 
 
 def filter_titles(titles):
@@ -21,13 +21,11 @@ def main():
     client = pymongo.MongoClient("mongodb://localhost:27023/")
     db = client["newspaperdb"]
     titles = db["titles"]
-    twelve_hours_in_seconds = 43200
     while True:
         pre_path = "https://www.welt.de/schlagzeilen/nachrichten-vom-"
         ending_path = ".html"
         actual_date = date.today()
         actual_date = actual_date.strftime("%d-%m-%Y")
-        actual_date = '19-11-2022'
         url = pre_path + actual_date + ending_path
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
@@ -35,7 +33,6 @@ def main():
         text = text.split("|")
         data = []
         for element in text:
-            print(element[element.find("Ressort:") + 8:-11])
             data.append(element[element.find("Ressort:") + 8:-11])
         data = filter_titles(data)
         actual_date = date.today()
@@ -52,7 +49,17 @@ def main():
 
         if len(newspaper_titles) != 0:
             titles.insert_many(newspaper_titles)
-        time.sleep(twelve_hours_in_seconds)
+
+        time.sleep(calculate_sleep_time())
+
+
+def calculate_sleep_time():
+    five_minutes = 300
+    twelve_hours = 43200
+    if datetime.today().hour == 23 and datetime.today().minute > 50:
+        return twelve_hours
+    else:
+        return five_minutes
 
 
 if __name__ == '__main__':
