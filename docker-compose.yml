@@ -1,11 +1,3 @@
-# docker-compose exec spark-master /spark/bin/spark-shell --master spark://spark-master:7077
-
-# docker exec spark-master /spark/bin/spark-submit --packages org.mongodb.spark:mongo-spark-connector:10.0.5 --master spark://spark-master:7077 /opt/spark-data/spark_streaming.py
-
-#SPARK_HOME = C:\apps\opt\spark-3.3.0-bin-hadoop3
-#HADOOP_HOME = C:\apps\opt\spark-3.3.0-bin-hadoop3
-#PYSPARK_PYTHON = python
-
 version: '3'
 services:
   spark-master:
@@ -56,6 +48,7 @@ services:
 #      - MONGO_INITDB_DATABASE = admin
     volumes:
       - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+      - ~/mongo/data:/data/db # saves mongo stuff locally
     ports:
       - "27017:27017"
     networks:
