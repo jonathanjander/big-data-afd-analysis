@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: BigData
+  name: bigdata
   namespace: big-data
   labels:
-    service: BigData
+    service: bigdata
 spec:
   selector:
     matchLabels:
-      service: BigData
+      service: bigdata
   template:
     metadata:
       labels:
-        service: BigData
+        service: bigdata
     spec:
       containers:
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
@@ -26,10 +26,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: BigData
+  name: bigdata
   namespace: big-data
   labels:
-    service: BigData
+    service: bigdata
 spec:
   ports:
     - name: http
@@ -37,5 +37,5 @@ spec:
       protocol: TCP
       targetPort: 27017
   selector:
-    service: BigData
+    service: bigdata
   type: ClusterIP
