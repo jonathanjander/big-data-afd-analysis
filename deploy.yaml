@@ -19,7 +19,7 @@ spec:
           name: spark-master
           volumeMounts:
             - mountPath: ./spark_streaming/:/opt/spark-data
-              name: speicher-big-data
+              name: pvc
           ports:
             - containerPort: 8080
             - containerPort: 7077
@@ -32,7 +32,7 @@ spec:
               value: spark://spark-master:7077
           volumeMounts:
             - mountPath: ./spark_streaming/:/opt/spark-data
-              name: speicher-big-data
+              name: pvc
           ports:
             - containerPort: 8081
               protocol: TCP
@@ -46,14 +46,18 @@ spec:
           name: mongodb
           volumeMounts:
             - mountPath: ./mongo-init/:/docker-entrypoint-initdb.d/:ro
-              name: speicher-big-data
+              name: pvc
             - mountPath: ~/mongo/data:/data/db
-              name: speicher-big-data
+              name: pvc
           ports:
             - containerPort: 27017
               protocol: TCP
       imagePullSecrets:
         - name: haw
+      volumes:
+        - name: pvc
+          persistentVolumeClaim:
+            claimName: speicher-big-data
 ---
 apiVersion: v1
 kind: Service
