@@ -17,6 +17,9 @@ spec:
       containers:
         - image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
           name: spark-master
+          volumeMounts:
+            - mountPath: ./spark_streaming/:/opt/spark-data
+              name: speicher-big-data
           ports:
             - containerPort: 8080
             - containerPort: 7077
@@ -27,6 +30,9 @@ spec:
           env:
             - name: SPARK_MASTER
               value: spark://spark-master:7077
+          volumeMounts:
+            - mountPath: ./spark_streaming/:/opt/spark-data
+              name: speicher-big-data
           ports:
             - containerPort: 8081
               protocol: TCP
@@ -38,6 +44,11 @@ spec:
               protocol: TCP
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
           name: mongodb
+          volumeMounts:
+            - mountPath: ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+              name: speicher-big-data
+            - mountPath: ~/mongo/data:/data/db
+              name: speicher-big-data
           ports:
             - containerPort: 27017
               protocol: TCP
