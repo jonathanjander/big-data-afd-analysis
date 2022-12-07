@@ -30,6 +30,12 @@ spec:
           ports:
             - containerPort: 8081
               protocol: TCP
+
+        - image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+          name: twitter-socket-stream
+          ports:
+            - containerPort: 5555
+              protocol: TCP
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
           name: mongodb
           ports:
