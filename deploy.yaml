@@ -17,9 +17,12 @@ spec:
       containers:
         - image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
           name: spark-master
-          volumeMounts:
-            - mountPath: ./spark_streaming/:/opt/spark-data
-              name: pvc
+          # TODO: Volume verhindert den start in kubernetes
+          # TODO: es gibt hier keine dependencies, keyword depends_on dont exist
+          # TODO: Die container können über localhost kommunizieren, evtl hilft dir das weiter
+   #       volumeMounts:
+    #        - mountPath: ./spark_streaming/:/opt/spark-data
+     #         name: pvc
           ports:
             - containerPort: 8080
             - containerPort: 7077
@@ -30,15 +33,17 @@ spec:
           env:
             - name: SPARK_MASTER
               value: spark://spark-master:7077
-          volumeMounts:
-            - mountPath: ./spark_streaming/:/opt/spark-data
-              name: pvc
+          # TODO: Volume verhindert den start in kubernetes
+  #        volumeMounts:
+   #         - mountPath: ./spark_streaming/:/opt/spark-data
+    #          name: pvc
           ports:
             - containerPort: 8081
               protocol: TCP
 
         - image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
           name: twitter-socket-stream
+      #    hostname: socket-host-dns #TODO: Hostname dont exist for container in kubernetes
           ports:
             - containerPort: 5555
               protocol: TCP
