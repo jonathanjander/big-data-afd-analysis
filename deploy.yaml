@@ -45,8 +45,8 @@ spec:
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
           name: mongodb
           volumeMounts:
-            - mountPath: ./mongo-init/:/docker-entrypoint-initdb.d/:ro
-              name: pvc
+  #          - mountPath: ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+  #            name: pvc
             - mountPath: ~/mongo/data:/data/db
               name: pvc
           ports:
