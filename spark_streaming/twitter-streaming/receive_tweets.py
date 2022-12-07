@@ -27,7 +27,7 @@ class TwitterV2Stream(tweepy.StreamingClient):
                     output = output + str(";") + str(ts)
                 sentiment = get_sentiment(tweet.text)
                 output = output + str(';' + sentiment[0] + ';' + sentiment[1] + '\n')
-                print(output)
+                print(output, flush=True)
                 print("-")
                 print("-")
                 self.client_socket.send(output.encode('utf-8'))
@@ -63,11 +63,11 @@ if __name__ == "__main__":
     port = 5555  # specific port for your service.
     new_skt.bind((host, port))  # Binding host and port
 
-    print("Now listening on port: %s" % str(port))
+    print("Now listening on port: %s" % str(port), flush=True)
 
     new_skt.listen(5)  # waiting for client connection.
     c, addr = new_skt.accept()  # Establish connection with client. it returns first a socket object, c and the address bound to the socket
 
-    print("Received request from: " + str(addr))
+    print("Received request from: " + str(addr), flush=True)
     # and after accepting the connection, we will send the tweets through the socket
     send_tweets_v2(c)
