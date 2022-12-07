@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdata
+  namespace: big-data
+  labels:
+    service: bigdata
+spec:
+  selector:
+    matchLabels:
+      service: bigdata
+  template:
+    metadata:
+      labels:
+        service: bigdata
+    spec:
+      containers:
+        - image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
+          name: spark-master
+          ports:
+            - containerPort: 8080
+            - containerPort: 7077
+            - containerPort: 4040
+              protocol: TCP
+        - image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
+          name: spark-worker-1
+          env:
+            - name: SPARK_MASTER
+              value: spark://spark-master:7077
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+
+        - image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+          name: twitter-socket-stream
+          ports:
+            - containerPort: 5555
+              protocol: TCP
+        - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
+          name: mongodb
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+      imagePullSecrets:
+        - name: haw
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdata
+  namespace: big-data
+  labels:
+    service: bigdata
+spec:
+  ports:
+    - name: http
+      port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    service: bigdata
+  type: ClusterIP
