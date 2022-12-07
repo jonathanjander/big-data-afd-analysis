@@ -18,7 +18,7 @@ spec:
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
           name: mongo
           ports:
-            - containerPort: 27017:27017
+            - containerPort: 27017
               protocol: TCP
       imagePullSecrets:
         - name: haw
@@ -33,9 +33,9 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 27017:27017
+      port: 27017
       protocol: TCP
-      targetPort: 27017:27017
+      targetPort: 27017
   selector:
     service: BigData
   type: ClusterIP
