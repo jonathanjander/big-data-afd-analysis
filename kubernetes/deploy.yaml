@@ -47,6 +47,10 @@ spec:
           ports:
             - containerPort: 5555
               protocol: TCP
+          env:
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
+            -
         - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
           name: mongodb
           volumeMounts:
@@ -80,3 +84,15 @@ spec:
   selector:
     service: bigdata
   type: ClusterIP
+---
+apiVersion: socket/v1
+kind: Service
+metadata:
+  name: twitter-host-service
+spec:
+  type: ClusterIP
+  selector:
+    app: server
+  ports:
+  - protocol: TCP
+    port: 5555

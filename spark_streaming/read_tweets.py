@@ -83,11 +83,13 @@ if __name__ == "__main__":
 
         #.config("spark.mongodb.input.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
         #.config("spark.mongodb.output.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
-    host = socket.gethostbyname('socket-host-dns')
+    #host = socket.gethostbyname('socket-host-dns')
+    SRV = os.getenv('SERVER_ADDRESS')
+    #host = "0.0.0.0"
     port = 5555
     # read the tweet data from socket
     lines = spark.readStream.format("socket") \
-        .option("host", host) \
+        .option("host", SRV) \
         .option("port", port)\
         .load()
     print("is Streaming: "+ str(lines.isStreaming))

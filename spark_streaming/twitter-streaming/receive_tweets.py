@@ -58,8 +58,8 @@ def get_sentiment(tweet):
 if __name__ == "__main__":
     new_skt = socket.socket()  # initiate a socket object
     #host = "127.0.0.1"  # local machine address
-    #host = "0.0.0.0"  # local machine address
-    host = socket.gethostbyname('socket-host-dns')
+    host = "0.0.0.0"  # local machine address
+    #host = socket.gethostbyname('socket-host-dns')
     port = 5555  # specific port for your service.
     new_skt.bind((host, port))  # Binding host and port
 

@@ -29,7 +29,7 @@ services:
   twitter-socket-host:
     image: twitter-socket-stream
     container_name: twitter-socket-stream
-    hostname: socket-host-dns
+    # hostname: socket-host-dns
     depends_on:
       - spark-master
     ports:
