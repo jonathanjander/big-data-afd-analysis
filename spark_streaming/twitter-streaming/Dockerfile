@@ -1,5 +1,5 @@
 # Get the latest base image for python
-FROM python:3.7
+FROM python:3.7-slim-buster
 
 RUN pip3 install germansentiment
 RUN pip3 install tweepy
