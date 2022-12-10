@@ -18,12 +18,10 @@ spec:
         ##########################>Master<#################################
         - image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
           name: spark-master
-          # TODO: Volume verhindert den start in kubernetes
-          # TODO: es gibt hier keine dependencies, keyword depends_on dont exist
-          # TODO: Die container können über localhost kommunizieren, evtl hilft dir das weiter
           #volume:
             #- ./spark_streaming/:/opt/spark-data
           volumeMounts:
+            # - mountPath: "/spark_streaming:/opt/spark-data"
             - mountPath: "/spark_streaming/opt/spark-data"
               name: pvc
           ports:
@@ -41,6 +39,7 @@ spec:
           #volume:
             #- ./spark_streaming/:/opt/spark-data
           volumeMounts:
+            #- mountPath: "spark_streaming:/opt/spark-data"
             - mountPath: "spark_streaming/opt/spark-data"
               name: pvc
           ports:
@@ -91,14 +90,19 @@ spec:
     service: bigdata
   type: ClusterIP
 ---
-apiVersion: socket/v1
+apiVersion: v1
 kind: Service
 metadata:
   name: twitter-host-service
+  namespace: big-data
+  labels:
+    service: bigdata
 spec:
-  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555
+      name: http
   selector:
     app: server
-  ports:
-  - protocol: TCP
-    port: 5555
+  type: ClusterIP
