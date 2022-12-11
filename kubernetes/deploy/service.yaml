@@ -27,5 +27,44 @@ spec:
       port: 5555
       targetPort: 5555
   selector:
-    app: server
+    app: streaming
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master
+spec:
+  selector:
+    app: streaming
+  ports:
+    - name: web-ui
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: master
+      protocol: TCP
+      port: 7077
+      targetPort: 7077
+    - name: master-rest
+      protocol: TCP
+      port: 6066
+      targetPort: 6066
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: big-data
+  labels:
+    service: mongodb
+spec:
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: mongodb
+  type: ClusterIP
+---

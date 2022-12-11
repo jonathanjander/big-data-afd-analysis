@@ -4,15 +4,15 @@ metadata:
   name: mongodb
   namespace: big-data
   labels:
-    service: mongodb
+    app: mongodb
 spec:
   selector:
     matchLabels:
-      service: mongodb
+      app: mongodb
   template:
     metadata:
       labels:
-        service: mongodb
+        app: mongodb
     spec:
       containers:
         - name: mongodb

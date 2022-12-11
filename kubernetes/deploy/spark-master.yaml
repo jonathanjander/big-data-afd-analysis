@@ -4,15 +4,15 @@ metadata:
   name: spark-master
   namespace: big-data
   labels:
-    service: spark-master
+    app: streaming
 spec:
   selector:
     matchLabels:
-      service: spark-master
+      app: streaming
   template:
     metadata:
       labels:
-        service: spark-master
+        app: streaming
     spec:
       containers:
         - name: spark-master
@@ -21,9 +21,24 @@ spec:
             - containerPort: 8080
             - containerPort: 7077
             - containerPort: 4041
+          env:
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
           volumeMounts:
             - mountPath: "/opt/spark-data"
               name: spark-data
+
+
+#        - name: twitter-socket-stream
+ #        image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+  #        env:
+   #         - name: SERVER_ADDRESS
+    #          value: twitter-host-service
+     #     ports:
+      #      - containerPort: 5555
+       #   volumeMounts:
+        #    - mountPath: "/opt/spark-data"
+         #     name: spark-data
 
       imagePullSecrets:
         - name: haw

@@ -4,19 +4,22 @@ metadata:
   name: twitter-socket-stream
   namespace: big-data
   labels:
-    service: twitter-socket-stream
+    app: streaming
 spec:
   selector:
     matchLabels:
-      service: twitter-socket-stream
+      app: streaming
   template:
     metadata:
       labels:
-        service: twitter-socket-stream
+        app: streaming
     spec:
       containers:
         - name: twitter-socket-stream
           image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+          env:
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
           ports:
             - containerPort: 5555
           volumeMounts:

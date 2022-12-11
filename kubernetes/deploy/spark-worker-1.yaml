@@ -4,22 +4,24 @@ metadata:
   name: spark-worker-1
   namespace: big-data
   labels:
-    service: spark-worker-1
+    app: streaming
 spec:
   selector:
     matchLabels:
-      service: spark-worker-1
+      app: streaming
   template:
     metadata:
       labels:
-        service: spark-worker-1
+        app: streaming
     spec:
       containers:
         - name: spark-worker-1
           image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
           env:
             - name: SPARK_MASTER
-              value: spark://10.233.102.35:7077
+              value: spark://10.233.87.248:7077
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
           ports:
             - containerPort: 8081
           volumeMounts:
