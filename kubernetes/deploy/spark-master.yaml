@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+  namespace: big-data
+  labels:
+    service: spark-master
+spec:
+  selector:
+    matchLabels:
+      service: spark-master
+  template:
+    metadata:
+      labels:
+        service: spark-master
+    spec:
+      containers:
+        - name: spark-master
+          image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
+          ports:
+            - containerPort: 8080
+            - containerPort: 7077
+            - containerPort: 4041
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+
+      imagePullSecrets:
+        - name: haw
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data

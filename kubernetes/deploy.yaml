@@ -14,64 +14,56 @@ spec:
       labels:
         service: bigdata
     spec:
+#      hostNetwork: true
       containers:
-        ##########################>Master<#################################
-        - image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
-          name: spark-master
-          #volume:
-            #- ./spark_streaming/:/opt/spark-data
-          volumeMounts:
-            # - mountPath: "/spark_streaming:/opt/spark-data"
-            - mountPath: "/spark_streaming/opt/spark-data"
-              name: pvc
+        - name: spark-master
+          image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
           ports:
             - containerPort: 8080
             - containerPort: 7077
-            - containerPort: 4040
-              protocol: TCP
-        ##########################>Worker<#################################
-        - image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
-          name: spark-worker-1
+            - containerPort: 4041
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+
+
+        - name: spark-worker-1
+          image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
           env:
             - name: SPARK_MASTER
-              value: spark://spark-master:7077
-          # TODO: Volume verhindert den start in kubernetes
-          #volume:
-            #- ./spark_streaming/:/opt/spark-data
-          volumeMounts:
-            #- mountPath: "spark_streaming:/opt/spark-data"
-            - mountPath: "spark_streaming/opt/spark-data"
-              name: pvc
+              value: localhost:7077 #TODO container name
           ports:
             - containerPort: 8081
-              protocol: TCP
-          ##########################>Twitter<#################################
-        - image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
-          name: twitter-socket-stream
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+
+
+        - name: twitter-socket-stream
+          image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
           ports:
             - containerPort: 5555
-              protocol: TCP
-          env:
-            - name: SERVER_ADDRESS
-              value: twitter-host-service
-        ##########################>Mongodb<#################################
-        - image: git.haw-hamburg.de:5005/acg569/big-data/mongo
-          name: mongodb
           volumeMounts:
-  #          - mountPath: ./mongo-init/:/docker-entrypoint-initdb.d/:ro
-  #            name: pvc
-            - mountPath: "/mongo/data/data/db"
-              name: pvc
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+
+
+        - name: mongo-db
+          image: git.haw-hamburg.de:5005/acg569/big-data/mongo
+          volumeMounts:
+            - mountPath: "/data/db"
+              name: spark-data
           ports:
             - containerPort: 27017
-              protocol: TCP
+
+
       imagePullSecrets:
         - name: haw
-      # Speicher
       volumes:
-        - name: pvc
+        - name: spark-data
           persistentVolumeClaim:
             claimName: speicher-big-data
+
 ---
 apiVersion: v1
 kind: Service

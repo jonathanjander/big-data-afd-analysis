@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twitter-socket-stream
+  namespace: big-data
+  labels:
+    service: twitter-socket-stream
+spec:
+  selector:
+    matchLabels:
+      service: twitter-socket-stream
+  template:
+    metadata:
+      labels:
+        service: twitter-socket-stream
+    spec:
+      containers:
+        - name: twitter-socket-stream
+          image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+          ports:
+            - containerPort: 5555
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+      imagePullSecrets:
+        - name: haw
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data

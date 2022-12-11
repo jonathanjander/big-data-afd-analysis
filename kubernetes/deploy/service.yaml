@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdata
+  namespace: big-data
+  labels:
+    service: bigdata
+spec:
+  ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    service: bigdata
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twitter-host-service
+  namespace: big-data
+  labels:
+    service: twitter-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555
+  selector:
+    app: server
+  type: ClusterIP
