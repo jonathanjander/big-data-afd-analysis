@@ -21,11 +21,11 @@ spec:
             - containerPort: 27017
           volumeMounts:
             - mountPath: "/data/db"
-              name: spark-data
+              name: storage
 
       imagePullSecrets:
         - name: haw
       volumes:
-        - name: spark-data
+        - name: storage
           persistentVolumeClaim:
-            claimName: speicher-big-data
+            claimName: mongo-storage

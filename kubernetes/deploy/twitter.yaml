@@ -22,12 +22,12 @@ spec:
               value: twitter-host-service
           ports:
             - containerPort: 5555
-          volumeMounts:
-            - mountPath: "/opt/spark-data"
-              name: spark-data
+          #volumeMounts:
+          #  - mountPath: "/opt/spark-data"
+          #    name: spark-data
       imagePullSecrets:
         - name: haw
-      volumes:
-        - name: spark-data
-          persistentVolumeClaim:
-            claimName: speicher-big-data
+      #volumes:
+      #  - name: spark-data
+      #    persistentVolumeClaim:
+      #      claimName: speicher-big-data
