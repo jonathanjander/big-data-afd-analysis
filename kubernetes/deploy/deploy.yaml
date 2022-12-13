@@ -1,0 +1,211 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+  namespace: big-data
+  labels:
+    app: streaming
+spec:
+  selector:
+    matchLabels:
+      app: streaming
+  template:
+    metadata:
+      labels:
+        app: streaming
+    spec:
+      containers:
+        - name: spark-master
+          image: git.haw-hamburg.de:5005/acg569/big-data/spark-master
+          ports:
+            - containerPort: 8080
+            - containerPort: 7077
+            - containerPort: 4041
+          env:
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+      imagePullSecrets:
+        - name: haw
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker-1
+  namespace: big-data
+  labels:
+    app: streaming
+spec:
+  selector:
+    matchLabels:
+      app: streaming
+  template:
+    metadata:
+      labels:
+        app: streaming
+    spec:
+      containers:
+        - name: spark-worker-1
+          image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
+          env:
+            - name: SPARK_MASTER
+              value: spark://spark-master:7077
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+
+      imagePullSecrets:
+        - name: haw
+
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twitter-socket-stream
+  namespace: big-data
+  labels:
+    app: streaming
+spec:
+  selector:
+    matchLabels:
+      app: streaming
+  template:
+    metadata:
+      labels:
+        app: streaming
+    spec:
+      containers:
+        - name: twitter-socket-stream
+          image: git.haw-hamburg.de:5005/acg569/big-data/twitter-socket-stream
+          env:
+            - name: SERVER_ADDRESS
+              value: twitter-host-service
+          ports:
+            - containerPort: 5555
+          volumeMounts:
+            - mountPath: "/opt/spark-data"
+              name: spark-data
+      imagePullSecrets:
+        - name: haw
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: big-data
+  labels:
+    app: mongodb
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: git.haw-hamburg.de:5005/acg569/big-data/mongo
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - mountPath: "/data/db"
+              name: spark-data
+
+      imagePullSecrets:
+        - name: haw
+      volumes:
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: speicher-big-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdata
+  namespace: big-data
+  labels:
+    service: bigdata
+spec:
+  ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    service: bigdata
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twitter-host-service
+  namespace: big-data
+  labels:
+    service: twitter-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555
+  selector:
+    app: streaming
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master
+spec:
+  selector:
+    app: streaming
+  ports:
+    - name: web-ui
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: master
+      protocol: TCP
+      port: 7077
+      targetPort: 7077
+    - name: master-rest
+      protocol: TCP
+      port: 6066
+      targetPort: 6066
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: big-data
+  labels:
+    service: mongodb
+spec:
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: mongodb
+  type: ClusterIP
+---
