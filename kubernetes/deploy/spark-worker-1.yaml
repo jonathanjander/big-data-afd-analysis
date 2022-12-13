@@ -19,19 +19,19 @@ spec:
           image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
           env:
             - name: SPARK_MASTER
-              value: spark://spark-master:7077
+              value: spark://10.233.86.58:7077
             - name: SERVER_ADDRESS
               value: twitter-host-service
           ports:
             - containerPort: 8081
           volumeMounts:
             - mountPath: "/opt/spark-data"
-              name: spark-data
+              name: storage
 
       imagePullSecrets:
         - name: haw
 
       volumes:
-        - name: spark-data
+        - name: storage
           persistentVolumeClaim:
-            claimName: speicher-big-data
+            claimName: worker-storage

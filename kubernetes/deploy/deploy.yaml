@@ -33,45 +33,6 @@ spec:
         - name: spark-data
           persistentVolumeClaim:
             claimName: speicher-big-data
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: spark-worker-1
-  namespace: big-data
-  labels:
-    app: streaming
-spec:
-  selector:
-    matchLabels:
-      app: streaming
-  template:
-    metadata:
-      labels:
-        app: streaming
-    spec:
-      containers:
-        - name: spark-worker-1
-          image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
-          env:
-            - name: SPARK_MASTER
-              value: spark://spark-master:7077
-            - name: SERVER_ADDRESS
-              value: twitter-host-service
-          ports:
-            - containerPort: 8081
-          volumeMounts:
-            - mountPath: "/opt/spark-data"
-              name: spark-data
-
-      imagePullSecrets:
-        - name: haw
-
-      volumes:
-        - name: spark-data
-          persistentVolumeClaim:
-            claimName: speicher-big-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -97,15 +58,8 @@ spec:
               value: twitter-host-service
           ports:
             - containerPort: 5555
-          volumeMounts:
-            - mountPath: "/opt/spark-data"
-              name: spark-data
       imagePullSecrets:
         - name: haw
-      volumes:
-        - name: spark-data
-          persistentVolumeClaim:
-            claimName: speicher-big-data
 ---
 apiVersion: apps/v1
 kind: Deployment
