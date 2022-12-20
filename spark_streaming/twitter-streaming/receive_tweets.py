@@ -20,6 +20,7 @@ class TwitterV2Stream(tweepy.StreamingClient):
             if isinstance(tweet.text, str) and tweet.referenced_tweets == None:
                 # tweet.created_at.strftime("%m/%d/%Y, %H:%M:%S")
                 output = str(tweet.text)
+                output = output.replace(";", ".. ")
                 if tweet.created_at is not None:
                     output = output + str(";") + str(tweet.created_at)
                 else:
@@ -52,7 +53,10 @@ def send_tweets_v2(c_socket):
 def get_sentiment(tweet):
     model = SentimentModel()
     classes, probabilities = model.predict_sentiment([tweet], output_probabilities=True)
-    return [str(classes), str(probabilities)]
+    probs = ''
+    for i in range(3):
+        probs += str(probabilities[0][i][1]) + ';'
+    return [str(classes[0]), probs]
 
 
 if __name__ == "__main__":

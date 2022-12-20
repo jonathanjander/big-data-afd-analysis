@@ -2,6 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from pyspark.sql import functions as F
+from pyspark.sql.functions import from_unixtime, to_timestamp
+from pyspark.sql.types import *
 import socket
 import os
 import sys
@@ -21,10 +23,17 @@ import sys
 # filter nach sprache
 def preprocessing(tweets_pre):
     # splits input string into tweets and timestamps (semicolon seperated)
-    tweets_pre = tweets_pre.withColumn('tmp', split(col("value"), ';')).withColumn('tweet', col('tmp')[0]).withColumn('timestamp', col('tmp')[1]).withColumn('sentiment', col('tmp')[2]).withColumn('sentiment_probabilities', col('tmp')[3]).drop('tmp', 'value')
+    #tweets_pre = tweets_pre.withColumn('tmp', split(col("value"), ';')).withColumn('tweet', col('tmp')[0]).withColumn('timestamp_tweet', col('tmp')[1]).withColumn('sentiment', col('tmp')[2]).withColumn('sentiment_probabilities', col('tmp')[3]).drop('tmp', 'value')
+    tweets_pre = tweets_pre.withColumn('tmp', split(col("value"), ';')).withColumn('tweet', col('tmp')[0]).withColumn(
+        'timestamp_tweet', col('tmp')[1]).withColumn('sentiment', col('tmp')[2]).withColumn('positive_sentiment_value',col('tmp')[3]).withColumn('negative_sentiment_value',col('tmp')[4]).withColumn('neutral_sentiment_value',col('tmp')[5]).drop('tmp','value')
     tweets_pre = tweets_pre.withColumn('tweet', F.regexp_replace('tweet', r'http\S+', ''))
     tweets_pre = tweets_pre.withColumn('tweet', F.regexp_replace('tweet', '@\w+', ''))
     tweets_pre = tweets_pre.withColumn('tweet', F.regexp_replace('tweet', 'RT:', ''))
+    #tweets_pre = tweets_pre.withColumn('formatted_timestamp', when(split(col('timestamp'), '')[10] == '.', unix_timestamp(col('timestamp'), "yyyy-MM-dd HH:mm:ss")).otherwise(col('timestamp')))
+    tweets_pre = tweets_pre.withColumn('formatted_timestamp', to_timestamp(from_unixtime(col('timestamp_tweet'))))
+    #tweets_pre = tweets_pre.withColumn('positive_sentiment_value', col('positive_sentiment_value').cast(FloatType))
+    #tweets_pre = tweets_pre.withColumn('negative_sentiment_value', col('negative_sentiment_value').cast(FloatType))
+    #tweets_pre = tweets_pre.withColumn('neutral_sentiment_value', col('neutral_sentiment_value').cast(FloatType))
     tweets_pre = tweets_pre.na.replace('', None)
     tweets_pre = tweets_pre.na.drop()
     return tweets_pre
@@ -52,17 +61,6 @@ def sentiment_detection(text):
 
     return ['test','test']
 
-def tutorial_example_for_testing(lines):
-    lines.printSchema()
-    words = lines.select(
-        explode(
-            split(lines.value, " ")
-        ).alias("word")
-    )
-    # Generate running word count
-    word_counts = words.groupBy("word").count()
-    return word_counts
-
 def create_table(tweets_df, spark):
 
     tweets_df.createOrReplaceTempView('test')
@@ -83,21 +81,25 @@ if __name__ == "__main__":
 
         #.config("spark.mongodb.input.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
         #.config("spark.mongodb.output.uri", "mongodb://127.0.0.1/afd_tweet_analyzer.tweets") \
-    #host = socket.gethostbyname('socket-host-dns')
-    SRV = os.getenv('SERVER_ADDRESS')
+    #TODO change host for ICC
+    host = socket.gethostbyname('socket-host-dns')
+    #SRV = os.getenv('SERVER_ADDRESS')
     #host = "0.0.0.0"
     port = 5555
     # read the tweet data from socket
     lines = spark.readStream.format("socket") \
-        .option("host", SRV) \
+        .option("host", host) \
         .option("port", port)\
         .load()
     print("is Streaming: "+ str(lines.isStreaming))
     tweets = preprocessing(lines)
     #tweets = sentiment(tweets)
-    #tweets.printSchema()
+    tweets.printSchema()
     #create_table(tweets, spark)
+    tweets_aggregated = tweets.withWatermark("formatted_timestamp", "2 minutes").groupBy("sentiment", window("formatted_timestamp", "2 minutes")).count()
+    #.withWatermark(eventTime=window("formatted_timestamp"),delayThreshold="10 minutes")
     tweets = tweets.repartition(1)
+    tweets_aggregated = tweets_aggregated.repartition(1)
     # encoding still doesn't work
     """
     query = tweets.writeStream.queryName("all_tweets") \
@@ -108,6 +110,26 @@ if __name__ == "__main__":
         .trigger(processingTime='60 seconds') \
         .start()
         # .outputMode('append')
+    """
+    """
+    query_view = tweets_aggregated.writeStream.queryName("all_tweets_view") \
+        .outputMode("complete") \
+        .format("console") \
+        .trigger(processingTime='60 seconds') \
+        .start()
+    """
+    query_view = tweets_aggregated.writeStream.queryName("all_tweets_view") \
+        .outputMode("append") \
+        .format("mongodb") \
+        .option("spark.mongodb.connection.uri", "mongodb://mongodb:27017/Big-Data-DB") \
+        .option("spark.mongodb.database", "Big-Data-DB") \
+        .option("checkpointLocation", "/checkpoints") \
+        .option("spark.mongodb.collection", "TweetViews") \
+        .start()
+
+        #
+        #.trigger(processingTime='60 seconds') \
+
 
     """
     query = tweets.writeStream.queryName("all_tweets") \
@@ -119,16 +141,7 @@ if __name__ == "__main__":
         .outputMode("append") \
         .trigger(processingTime='60 seconds') \
         .start()
-
-
     """
-    # just for testing over the console
-    wordcounts = tutorial_example_for_testing(lines)
-        # Start running the query that prints the running counts to the console
-        query = wordcounts \
-            .writeStream \
-            .outputMode("complete") \
-            .format("console") \
-            .start()
-    """
-    query.awaitTermination()
+
+    #query.awaitTermination()
+    query_view.awaitTermination()
