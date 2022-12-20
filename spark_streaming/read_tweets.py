@@ -31,9 +31,9 @@ def preprocessing(tweets_pre):
     tweets_pre = tweets_pre.withColumn('tweet', F.regexp_replace('tweet', 'RT:', ''))
     #tweets_pre = tweets_pre.withColumn('formatted_timestamp', when(split(col('timestamp'), '')[10] == '.', unix_timestamp(col('timestamp'), "yyyy-MM-dd HH:mm:ss")).otherwise(col('timestamp')))
     tweets_pre = tweets_pre.withColumn('formatted_timestamp', to_timestamp(from_unixtime(col('timestamp_tweet'))))
-    #tweets_pre = tweets_pre.withColumn('positive_sentiment_value', col('positive_sentiment_value').cast(FloatType))
-    #tweets_pre = tweets_pre.withColumn('negative_sentiment_value', col('negative_sentiment_value').cast(FloatType))
-    #tweets_pre = tweets_pre.withColumn('neutral_sentiment_value', col('neutral_sentiment_value').cast(FloatType))
+    tweets_pre = tweets_pre.withColumn('positive_sentiment_value', col('positive_sentiment_value').cast(DoubleType()))
+    tweets_pre = tweets_pre.withColumn('negative_sentiment_value', col('negative_sentiment_value').cast(DoubleType()))
+    tweets_pre = tweets_pre.withColumn('neutral_sentiment_value', col('neutral_sentiment_value').cast(DoubleType()))
     tweets_pre = tweets_pre.na.replace('', None)
     tweets_pre = tweets_pre.na.drop()
     return tweets_pre
@@ -66,6 +66,19 @@ def create_table(tweets_df, spark):
     tweets_df.createOrReplaceTempView('test')
     spark.sql("SELECT tweet FROM test").show()
 
+def aggregation(tweets):
+    #tweets_aggregated = tweets.withWatermark("formatted_timestamp", "2 minutes").groupBy("sentiment",
+    #                                                                                     window("formatted_timestamp",
+    #                                                                                            "2 minutes")).count()
+    tweets_aggregated = tweets.withWatermark("formatted_timestamp", "15 minutes").groupBy("sentiment",
+                                                                                         window("formatted_timestamp", "15 minutes")).agg(count("*").alias("sentiment_count"),
+                                                                                                                  avg("positive_sentiment_value").alias("avg_positive"),
+                                                                                                                  avg("negative_sentiment_value").alias("avg_negative"),
+                                                                                                                  avg("neutral_sentiment_value").alias("avg_neutral"))
+    #groupBy("sentiment", window("formatted_timestamp","2 minutes"))
+    #groupBy("sentiment", window("formatted_timestamp","2 minutes"))
+    tweets_aggregated = tweets_aggregated.repartition(1)
+    return tweets_aggregated
 if __name__ == "__main__":
     # fixing a bug with this
 
@@ -96,10 +109,9 @@ if __name__ == "__main__":
     #tweets = sentiment(tweets)
     tweets.printSchema()
     #create_table(tweets, spark)
-    tweets_aggregated = tweets.withWatermark("formatted_timestamp", "2 minutes").groupBy("sentiment", window("formatted_timestamp", "2 minutes")).count()
+    tweets_aggregated = aggregation(tweets)
     #.withWatermark(eventTime=window("formatted_timestamp"),delayThreshold="10 minutes")
     tweets = tweets.repartition(1)
-    tweets_aggregated = tweets_aggregated.repartition(1)
     # encoding still doesn't work
     """
     query = tweets.writeStream.queryName("all_tweets") \
@@ -113,9 +125,9 @@ if __name__ == "__main__":
     """
     """
     query_view = tweets_aggregated.writeStream.queryName("all_tweets_view") \
-        .outputMode("complete") \
+        .outputMode("append") \
         .format("console") \
-        .trigger(processingTime='60 seconds') \
+        .trigger(processingTime='120 seconds') \
         .start()
     """
     query_view = tweets_aggregated.writeStream.queryName("all_tweets_view") \
@@ -125,11 +137,11 @@ if __name__ == "__main__":
         .option("spark.mongodb.database", "Big-Data-DB") \
         .option("checkpointLocation", "/checkpoints") \
         .option("spark.mongodb.collection", "TweetViews") \
+        .trigger(processingTime="5 minutes") \
         .start()
 
         #
         #.trigger(processingTime='60 seconds') \
-
 
     """
     query = tweets.writeStream.queryName("all_tweets") \
