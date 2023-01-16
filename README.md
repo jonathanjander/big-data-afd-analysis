@@ -1,10 +1,12 @@
-# big-data
-this is our code for our big data masters project. This repository is just a copy of our actual repository which is not accessible anymore.
+# Big Data streaming project
+this is our code for our big data masters project. This repository is just a copy of our actual repository because the original repository is not accessible anymore.
 
+## small overview
+we collected data about the political party 'afd' via twitter and newspaper archives to identify the party's public opinion. This was done using spark streaming and sentiment analysis.
 
+![diagram](https://cdn.discordapp.com/attachments/368743167249481731/1064658357132214282/image.png)
 
-### some notes
-## Getting started
+## some old dev notes
 1. Baue twitter image streaming image falls nicht vorhanden.
 ```
 # in /spark_streaming/twitter-streaming
