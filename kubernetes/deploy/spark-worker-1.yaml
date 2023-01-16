@@ -19,7 +19,7 @@ spec:
           image: git.haw-hamburg.de:5005/acg569/big-data/spark-worker
           env:
             - name: SPARK_MASTER
-              value: spark://10.233.86.58:7077
+              value: spark://10.233.109.44:7077
             - name: SERVER_ADDRESS
               value: twitter-host-service
           ports:
