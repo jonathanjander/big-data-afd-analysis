@@ -17,4 +17,5 @@ conn = new Mongo();
 //db = conn.getDB("Big-Data-DB");
 db = db.getSiblingDB('Big-Data-DB')
 db.createCollection("Tweets");
+db.createCollection("TweetViews");
 //db.getCollection("Tweets");
