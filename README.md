@@ -1,7 +1,9 @@
 # big-data
+this is our code for our big data masters project. This repository is just a copy of our actual repository which is not accessible anymore.
 
 
 
+### some notes
 ## Getting started
 1. Baue twitter image streaming image falls nicht vorhanden.
 ```
