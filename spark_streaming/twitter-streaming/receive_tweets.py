@@ -4,7 +4,7 @@ import socket
 from datetime import datetime
 from germansentiment import SentimentModel
 
-BEARER = 'AAAAAAAAAAAAAAAAAAAAAOtkigEAAAAAliy%2B7td2nmGkVVCj7orrLwhjJ8w%3DpM4IvekgfVzgAs7NnJoXgLrW1q67jpc2VRjeSmqJCCj8cLpfoc'
+BEARER = 'insert_bearer_here'
 
 
 class TwitterV2Stream(tweepy.StreamingClient):
